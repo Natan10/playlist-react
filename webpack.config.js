@@ -2,7 +2,7 @@ const path = require('path')
 
 module.exports = {
   mode: 'development',
-  entry: path.resolve(__dirname, '/src/main/index.tsx'),
+  entry: path.resolve(__dirname, '/src/index.tsx'),
   output: {
     path: path.join(__dirname, 'public'),
     filename: 'bundle.js'
@@ -22,6 +22,13 @@ module.exports = {
         test: /\.js$/,
         loader: "source-map-loader",
       },
+      {
+        test: /\.(png|jpe?g|mp3)$/i,
+        loader: 'file-loader',
+        options:{
+          name: 'assets/[contenthash].[ext]'
+        }
+      }
     ]
   },
   resolve: {
