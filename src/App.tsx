@@ -1,33 +1,27 @@
-import React,{useState} from "react";
+import React,{useState,useRef,useEffect} from "react";
 import {BsPlayFill,BsFillPauseFill,BsFillSkipBackwardFill,BsFillSkipForwardFill} from "react-icons/bs";
 import sound from "../assets/baco.mp3";
 import "./style.scss";
 
 export default function App(){
+  const inputRef = useRef(null)
+  const audioRef = useRef(null)
   const [isPlay,setIsPlay] = useState(false);
-  const [audio] = useState(new Audio(sound));
+  const [value,setValue] = useState(0);
  
-  
-  // function time(){
-  //   console.log("buffer",audio.buffered)
-  //   console.log("duration",audio.duration)
-  //   console.log("played",audio.played)
-  //   console.log("readyState",audio.readyState)
-  //   console.log("src",audio.currentSrc)
-  //   console.log("content",audio.seeking)
-  //   console.log("volume",audio.volume)
-  //   console.log("currentTime",audio.currentTime)
-  // }
+  useEffect(()=>{
+    handleBar(value)
+  },[value])
 
   function backward(){
-   if(audio.currentTime > 0) {
-      audio.currentTime -= 30
+   if(audioRef.current.currentTime > 0) {
+      audioRef.current.currentTime -= 30
     }
   }
 
   function forward(){
-    if(audio.currentTime < audio.duration) {
-      audio.currentTime += 30
+    if(audioRef.current.currentTime < audioRef.current.duration) {
+      setValue(audioRef.current.currentTime += 30)
     }
   }
 
@@ -35,17 +29,46 @@ export default function App(){
     const aux = !isPlay;
     setIsPlay(old => !old)
     if(aux){
-      audio.play()
+      audioRef.current.play()
     }else{
-      audio.pause()
+      audioRef.current.pause()
     }
   }
 
+  function onChangeRange(e){
+    const valueTime = Math.floor(e.target.value)
+    audioRef.current.currentTime = valueTime
+    inputRef.current.value = valueTime
+    setValue(valueTime)
+  }
+
+  function handleBar(value){
+    const min = inputRef.current.min
+    const max = inputRef.current.max
+    inputRef.current.style.backgroundSize = (value - min) * 100 / (max - min) + '% 100%'
+  }
+
+  function maxValue(){
+    return Math.floor(audioRef?.current?.duration) || 10
+  }
 
   return(
     <div className="main">
       <h1>Testando Web Audio API</h1>
       <div className="audio-play">
+        <input 
+          className="slider"
+          ref={inputRef} 
+          type="range" 
+          min="0" 
+          max={maxValue()} 
+          value={value}
+          onChange={onChangeRange}   
+        />
+        <audio 
+          ref={audioRef} 
+          src={sound}
+          onTimeUpdate={(e) => setValue(e.currentTarget.currentTime)}/>
         <div className="controls">
           <button className="backward" onClick={backward}>
             <BsFillSkipBackwardFill size={24}/>
