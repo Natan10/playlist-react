@@ -15,7 +15,8 @@
     "baseUrl": "src",
     "allowJs": true,
     "resolveJsonModule": true,
-    "typeRoots": ["src"]
+    "typeRoots": ["src"],
+    "types":["node"]
   },
   "include": [
     "src/index.d.ts"

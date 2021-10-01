@@ -1,87 +1,109 @@
-import React,{useState,useRef,useEffect} from "react";
-import {BsPlayFill,BsFillPauseFill,BsFillSkipBackwardFill,BsFillSkipForwardFill} from "react-icons/bs";
-import sound from "../assets/baco.mp3";
+import React,{useState} from 'react';
+import Player from "./components/player";
+import out from "../assets/out.mp3";
+import baco from "../assets/baco.mp3";
+import daft from "../assets/daft.mp3";
+import artic from "../assets/artic.mp3";
 import "./style.scss";
 
+const mockSounds = [
+  {
+    "soundName": "Baco Exu",
+    "sound": baco
+  },
+  {
+    "soundName": "Stressed Out - Twenty One Pilots",
+    "sound": out
+  },
+  {
+    "soundName": "Artic monkeys",
+    "sound": artic
+  },
+  {
+    "soundName": "Daft Punk",
+    "sound": daft
+  }
+]
+
+type Props = {
+  soundName: string
+  sound: string
+}
+
 export default function App(){
-  const inputRef = useRef(null)
-  const audioRef = useRef(null)
-  const [isPlay,setIsPlay] = useState(false);
-  const [value,setValue] = useState(0);
- 
-  useEffect(()=>{
-    handleBar(value)
-  },[value])
-
-  function backward(){
-   if(audioRef.current.currentTime > 0) {
-      audioRef.current.currentTime -= 30
-    }
+  const [sounds] = useState<Props[]>(mockSounds);
+  const [sound,setSound] = useState<Props>(null as Props);
+  const [li,setLi] = useState(0);
+  
+  const handleSound = (event,index) => {
+    const choice = sounds.find(soundItem => soundItem.soundName === event.target.textContent);
+    setSound(choice)
+    handleListItem(index)
   }
 
-  function forward(){
-    if(audioRef.current.currentTime < audioRef.current.duration) {
-      setValue(audioRef.current.currentTime += 30)
-    }
-  }
-
-  function isPlaying(){
-    const aux = !isPlay;
-    setIsPlay(old => !old)
-    if(aux){
-      audioRef.current.play()
+  const handleListItem = (index) => {
+    const elements = document.getElementsByTagName('li')
+    if(li !== index){
+      elements[index].classList.add('active')
+      elements[li].classList.remove('active')
     }else{
-      audioRef.current.pause()
+      elements[index].classList.add('active')
+    }
+    setLi(index)
+  }
+  
+  const findIndexSound = (sound:Props) => {
+    return sounds.findIndex(i => i.soundName === sound.soundName);
+  }
+
+  const skipMusic = () =>{
+    const index = findIndexSound(sound)
+    if(index === (sounds.length - 1)){
+      setSound(sounds[0])
+      handleListItem(0)
+    }else{
+      setSound(sounds[index + 1])
+      handleListItem(index + 1)
     }
   }
 
-  function onChangeRange(e){
-    const valueTime = Math.floor(e.target.value)
-    audioRef.current.currentTime = valueTime
-    inputRef.current.value = valueTime
-    setValue(valueTime)
+  const backMusic = () => {
+    const index = findIndexSound(sound)
+    if(index === 0){
+      setSound(sounds[sounds.length - 1])
+      handleListItem(sounds.length - 1)
+    }else{
+      setSound(sounds[index - 1])
+      handleListItem(index - 1)
+    }
   }
 
-  function handleBar(value){
-    const min = inputRef.current.min
-    const max = inputRef.current.max
-    inputRef.current.style.backgroundSize = (value - min) * 100 / (max - min) + '% 100%'
-  }
-
-  function maxValue(){
-    return Math.floor(audioRef?.current?.duration) || 10
-  }
+  console.log('sound',sound)
 
   return(
     <div className="main">
-      <h1>Testando Web Audio API</h1>
-      <div className="audio-play">
-        <input 
-          className="slider"
-          ref={inputRef} 
-          type="range" 
-          min="0" 
-          max={maxValue()} 
-          value={value}
-          onChange={onChangeRange}   
+      <h1>Playlist</h1>
+      <div className="playlist">
+        {/* list sounds */}
+        <ul>
+          {sounds.map((soundItem,index) => {
+            return <li
+                      key={index} 
+                      onClick={e => handleSound(e,index)}
+                    >
+                      {soundItem.soundName}
+                    </li>
+          })}
+        </ul>
+        
+        {/* player */}
+        <Player 
+          song={sound?.sound} 
+          skip={skipMusic} 
+          back={backMusic}
+          disabled={sound ? false : true}
         />
-        <audio 
-          ref={audioRef} 
-          src={sound}
-          onTimeUpdate={(e) => setValue(e.currentTarget.currentTime)}/>
-        <div className="controls">
-          <button className="backward" onClick={backward}>
-            <BsFillSkipBackwardFill size={24}/>
-          </button>
-          <button className="play" onClick={isPlaying}>
-            {isPlay ? <BsFillPauseFill size={24}/> : <BsPlayFill size={24}/> }
-          </button>
-          <button className="forward" onClick={forward}>
-            <BsFillSkipForwardFill size={24}/>
-          </button>
-        </div>
       </div>
-
     </div>
   )
 }
