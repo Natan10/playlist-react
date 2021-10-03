@@ -78,14 +78,14 @@ export default function App(){
     }
   }
 
-  console.log('sound',sound)
 
   return(
     <div className="main">
-      <h1>Playlist</h1>
       <div className="playlist">
+        <h1 className="title">Playlist</h1>
+      
         {/* list sounds */}
-        <ul>
+        <ul className="playlist-sounds">
           {sounds.map((soundItem,index) => {
             return <li
                       key={index} 
@@ -98,7 +98,7 @@ export default function App(){
         
         {/* player */}
         <Player 
-          song={sound?.sound} 
+          sound={sound?.sound} 
           skip={skipMusic} 
           back={backMusic}
           disabled={sound ? false : true}

@@ -1,20 +1,21 @@
-import React,{useState,useRef,useEffect} from "react";
+import React,{useState,useRef,useEffect,useCallback} from "react";
 import Controls from "../controls";
 import "./style.scss";
 
 type Props = {
   disabled: boolean
-  song: string 
+  sound: string 
   skip: () => void
   back: () => void
 }
 
-const Player:React.FC<Props> = ({disabled,song,skip,back}: Props) => {
+const Player:React.FC<Props> = ({disabled,sound,skip,back}: Props) => {
   const inputRef = useRef(null)
   const audioRef = useRef(null)
   const [isPlay,setIsPlay] = useState(false);
+  const [totalTime,setTotalTime] = useState('');
+  const [currentTime,setCurrentTime] = useState('');
   const [value,setValue] = useState(0);
-  
   
   useEffect(()=>{
     handleBar(value)
@@ -23,9 +24,8 @@ const Player:React.FC<Props> = ({disabled,song,skip,back}: Props) => {
   useEffect(()=>{
     setIsPlay(false)
     setValue(0)
-  },[song])
+  },[sound])
 
-  
   function backward(){
    if(audioRef.current.currentTime > 0) {
       audioRef.current.currentTime -= 30
@@ -61,27 +61,66 @@ const Player:React.FC<Props> = ({disabled,song,skip,back}: Props) => {
     inputRef.current.style.backgroundSize = (value - min) * 100 / (max - min) + '% 100%'
   }
 
-  function maxValue(){
+  const maxValue = useCallback(() =>{
     return Math.floor(audioRef?.current?.duration) || 10
+  },[])
+  
+  const handleTimeSound = useCallback(()=>{
+    const time = audioRef?.current?.duration
+    const min = Math.floor(time/60);
+    const sec = Math.floor(time - min *60);
+
+    if(isNaN(min)){
+      setTotalTime('')
+    }
+    setTotalTime(`${String(min).padStart(2,'0')}:${sec}`)
+    setCurrentTime('00:00')
+  },[sound])
+
+  const currentTimeUpdate = (value) => {
+    const min = Math.floor(value/60);
+    const sec = Math.floor(value - min *60);
+
+    if(isNaN(min)){
+      setCurrentTime('')
+    }
+    setCurrentTime(`${String(min).padStart(2,'0')}:${String(sec).padStart(2,'0')}`)
   }
+
+  const handleTimeUpdate = useCallback((e) =>{
+    const currentTime = e.currentTarget.currentTime
+    setValue(currentTime)
+    currentTimeUpdate(currentTime)
+  },[sound])
 
   return(
     <div className={`audio-play ${disabled ? 'disabled':''}`}>
-      <input 
-        className="slider"
-        ref={inputRef} 
-        type="range" 
-        min="0" 
-        max={maxValue()} 
-        value={value}
-        onChange={onChangeRange}   
-      />
+      <div className="slider-controls">
+        <span className="currentTime">
+          {currentTime}
+        </span>
+        <input 
+          className="slider"
+          ref={inputRef} 
+          type="range" 
+          min="0" 
+          max={maxValue()} 
+          value={value}
+          onChange={onChangeRange}   
+        />
+        <span className="totalTime">
+          {totalTime}
+        </span>
+      </div>
       <audio 
         ref={audioRef} 
-        src={song}
+        src={sound}
         preload="metadata"
-        onEnded={()=> skip()}
-        onTimeUpdate={(e) => setValue(e.currentTarget.currentTime)}/>
+        onEnded={skip}
+        onCanPlay={handleTimeSound}
+        // onTimeUpdate={(e) => setValue(e.currentTarget.currentTime)}
+        onTimeUpdate={handleTimeUpdate}
+      />
 
       {/* controls */}
       <Controls
