@@ -54,6 +54,7 @@
         cursor: pointer;
         margin: 10px 0px;
         font-size: 24px;
+        border-radius: 2px;
 
         &.active {
           background-color: #04AA6D;
@@ -83,6 +84,6 @@
         }    
       }
     }
-  }
-  
+  } 
 }
+
