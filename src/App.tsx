@@ -4,6 +4,7 @@ import out from "../assets/out.mp3";
 import baco from "../assets/baco.mp3";
 import daft from "../assets/daft.mp3";
 import artic from "../assets/artic.mp3";
+import clorine from "../assets/clorine.mp3";
 import "./style.scss";
 
 const mockSounds = [
@@ -22,6 +23,10 @@ const mockSounds = [
   {
     "soundName": "Daft Punk",
     "sound": daft
+  },
+  {
+    "soundName": "Clorine",
+    "sound": clorine
   }
 ]
 

@@ -1,6 +1,10 @@
 import React,{useState,useRef,useEffect,useCallback} from "react";
-import Controls from "../controls";
-import "./style.scss";
+import styled,{css} from "styled-components";
+import {Controls,SliderControl} from "..";
+
+interface PlayerProps{
+  disabled: boolean
+}
 
 type Props = {
   disabled: boolean
@@ -8,6 +12,22 @@ type Props = {
   skip: () => void
   back: () => void
 }
+
+const PlayerWrapper = styled.div<PlayerProps>`
+  background-color: #000011;
+  width: 100%;
+  max-width: 330px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 24px;
+
+  ${({disabled}) => disabled && css`
+    pointer-events: none;
+    opacity: 0.5;
+  `}
+`
 
 const Player:React.FC<Props> = ({disabled,sound,skip,back}: Props) => {
   const inputRef = useRef(null)
@@ -26,19 +46,19 @@ const Player:React.FC<Props> = ({disabled,sound,skip,back}: Props) => {
     setValue(0)
   },[sound])
 
-  function backward(){
+  const backward = () => {
    if(audioRef.current.currentTime > 0) {
       audioRef.current.currentTime -= 30
     }
   }
 
-  function forward(){
+  const forward = () =>{
     if(audioRef.current.currentTime < audioRef.current.duration) {
       setValue(audioRef.current.currentTime += 30)
     }
   }
 
-  function isPlaying(){
+  const isPlaying = () => {
     const aux = !isPlay;
     if(aux){
       audioRef.current.play()
@@ -48,14 +68,14 @@ const Player:React.FC<Props> = ({disabled,sound,skip,back}: Props) => {
     setIsPlay(old => !old)
   }
 
-  function onChangeRange(e){
+  const onChangeRange = (e) =>{
     const valueTime = Math.floor(e.target.value)
     audioRef.current.currentTime = valueTime
     inputRef.current.value = valueTime
     setValue(valueTime)
   }
 
-  function handleBar(value){
+  const handleBar = (value) => {
     const min = inputRef.current.min
     const max = inputRef.current.max
     inputRef.current.style.backgroundSize = (value - min) * 100 / (max - min) + '% 100%'
@@ -94,31 +114,22 @@ const Player:React.FC<Props> = ({disabled,sound,skip,back}: Props) => {
   },[sound])
 
   return(
-    <div className={`audio-play ${disabled ? 'disabled':''}`}>
-      <div className="slider-controls">
-        <span className="currentTime">
-          {currentTime}
-        </span>
-        <input 
-          className="slider"
-          ref={inputRef} 
-          type="range" 
-          min="0" 
-          max={maxValue()} 
-          value={value}
-          onChange={onChangeRange}   
-        />
-        <span className="totalTime">
-          {totalTime}
-        </span>
-      </div>
+    <PlayerWrapper disabled={disabled}>  
+      {/* slide control */}
+      <SliderControl 
+        inputRef={inputRef} 
+        totalTime={totalTime} 
+        currentTime={currentTime}
+        maxValue={maxValue}
+        onChangeRange={(e) => onChangeRange(e)}
+        value={value}
+      />
       <audio 
         ref={audioRef} 
         src={sound}
         preload="metadata"
         onEnded={skip}
         onCanPlay={handleTimeSound}
-        // onTimeUpdate={(e) => setValue(e.currentTarget.currentTime)}
         onTimeUpdate={handleTimeUpdate}
       />
 
@@ -131,7 +142,7 @@ const Player:React.FC<Props> = ({disabled,sound,skip,back}: Props) => {
        isPlay={isPlay}
        isPlaying={isPlaying}
       />
-    </div>
+    </PlayerWrapper>
   )
 }
 
